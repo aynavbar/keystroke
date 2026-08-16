@@ -1,4 +1,6 @@
 <script>
+    import { trapFocus } from "./lib/attachments.svelte";
+
     let doc = $state({
       heading: "Lorem Ipsum",
       body: `
@@ -54,7 +56,7 @@
         </button>
     </div>
     {#if showEndSessionDialog}
-        <div class="end-session-dialog-surface">
+        <div class="end-session-dialog-surface" {@attach trapFocus}>
             <div class="end-session-dialog-content">
                 <h1 class="inter-700">End this session ?</h1>
                 <p class="inter-500">{wordCount} words</p>
