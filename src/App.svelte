@@ -1,7 +1,9 @@
 <script>
-    import { slide } from "svelte/transition";
+    import { slide, fade } from "svelte/transition";
 
     import { trapFocus } from "./lib/attachments.svelte";
+
+    import Button from "./lib/components/Button.svelte";
 
     let doc = $state({
       heading: "Lorem Ipsum",
@@ -68,7 +70,8 @@
         <textarea bind:value={doc.body} id="body" spellcheck="false" placeholder="Write something"></textarea>
     </div>
     <div class="fab">
-        <button
+        <Button
+            variant="destructive"
             onclick={() => {
               showEndSessionDialog = true
             }}
@@ -77,24 +80,26 @@
             <span class="material-symbols-rounded">
             stop
             </span>
-            <span>
+            <span class="inter-500">
                 End Session
             </span>
-        </button>
+        </Button>
     </div>
     {#if showEndSessionDialog}
-        <div class="end-session-dialog-surface" {@attach trapFocus}>
+        <div class="end-session-dialog-surface" {@attach trapFocus} transition:fade={{duration: 50}}>
             <div class="end-session-dialog-content">
                 <h1 class="inter-700">End this session ?</h1>
                 <p class="inter-500">{wordCount} words</p>
                 <div class="actions-row">
-                    <button onclick={() => {
+                    <Button
+                        variant="outlined"
+                        onclick={() => {
                       showEndSessionDialog = false
-                    }}>Keep writing</button>
-                    <button onclick={() => {
+                    }}>Keep writing</Button>
+                    <Button onclick={() => {
                       endSession = true
                       showEndSessionDialog = false
-                    }}>End session</button>
+                    }}>End session</Button>
                 </div>
             </div>
         </div>
@@ -151,30 +156,6 @@
         background-color: transparent;
     }
 
-    .fab button {
-        border: none;
-        color: #f70505;
-        background-color: #ffd0d0;
-    }
-
-    .fab button:disabled {
-        color: #ff7676;
-        background-color: #f7e2e2;
-    }
-
-    .fab button span {
-        background-color: transparent;
-    }
-
-    .fab button span:nth-child(1) {
-        font-size: 20px;
-    }
-
-    .fab button span:nth-child(2) {
-        font-family: Arial, Helvetica, sans-serif;
-        font-weight: 600;
-    }
-
     .end-session-dialog-surface {
         position: fixed;
         background-color: #00000030;
@@ -183,6 +164,7 @@
         display: flex;
         justify-content: center;
         align-items: center;
+        z-index: 10000;
     }
 
     .end-session-dialog-content {
@@ -207,12 +189,6 @@
         display: flex;
         gap: 5px;
         justify-content: flex-end;
-    }
-
-    .end-session-dialog-content .actions-row button:nth-child(2) {
-        color: #ffffff;
-        border: none;
-        background-color: #1876ff;
     }
 
     .copy-info-toast-container {
