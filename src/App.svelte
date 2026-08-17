@@ -1,4 +1,6 @@
 <script>
+    import { slide } from "svelte/transition";
+
     import { trapFocus } from "./lib/attachments.svelte";
 
     let doc = $state({
@@ -18,6 +20,7 @@
 
     let showEndSessionDialog = $state(false);
     let endSession = $state(false);
+    let showCopyInfoToast = $state(false);
 
     // recalculate the word count each time the document body changes
     let wordCount = $derived(doc.body.split(/ /).length)
@@ -40,12 +43,21 @@
 
     $effect(() => {
       // clear the document after a session is ended
-      if (endSession) {
-        copyToClipboard(clipboardDoc).finally(() => {
+      if (!endSession) return;
+      endSession = false // prevent effect logic rerun during `then` callback run
+      let toastTimeoutID;
+      copyToClipboard(clipboardDoc)
+        .finally(() => {
           doc.heading = ""
           doc.body = ""
-          endSession = false // prevent `if` block rerun
+          showCopyInfoToast = true
+          toastTimeoutID = setTimeout(() => {
+            showCopyInfoToast = false
+          }, 2000) // set a 2 second delay to hide the the toast
         });
+
+      return () => {
+        clearTimeout(toastTimeoutID) // cleanup for the toast timeout
       }
     })
 </script>
@@ -84,6 +96,13 @@
                       showEndSessionDialog = false
                     }}>End session</button>
                 </div>
+            </div>
+        </div>
+    {/if}
+    {#if showCopyInfoToast}
+        <div class="copy-info-toast-container" transition:slide={{axis: "y"}}>
+            <div class="copy-info">
+                <p class="inter-400">Copied to clipboard!</p>
             </div>
         </div>
     {/if}
@@ -128,6 +147,8 @@
         position: fixed;
         bottom: 1.2rem;
         right: 1.2rem;
+        z-index: 9999;
+        background-color: transparent;
     }
 
     .fab button {
@@ -192,5 +213,27 @@
         color: #ffffff;
         border: none;
         background-color: #1876ff;
+    }
+
+    .copy-info-toast-container {
+        position: fixed;
+        bottom: 0;
+        width: 100%;
+        height: 4rem;
+        inset-inline: 0;
+        background-color: #e2ffe2;
+        display: flex;
+        align-items: center;
+    }
+
+    .copy-info-toast-container .copy-info {
+        color: green;
+        height: fit-content;
+        background-color: transparent;
+        padding-inline-start: 2rem;
+    }
+
+    .copy-info p {
+        background-color: transparent;
     }
 </style>
