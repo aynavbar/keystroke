@@ -20,17 +20,32 @@
     let endSession = $state(false);
 
     // recalculate the word count each time the document body changes
-    let wordCount = $derived(doc.body.split(/[ ]/).length)
+    let wordCount = $derived(doc.body.split(/ /).length)
+    // create a separate copy of the document body to prevent race conditions while copying
+    let clipboardDoc = $derived(doc.body)
 
     // toggle the 'End session' button's `disabled` state by evaluating
     // whether there's an content in the document's body
     let disableSessionEndButton = $derived(doc.body ? false : true)
 
+    async function copyToClipboard(text) {
+      const type = "text/plain";
+      const clipboardItemData = {
+        [type]: text,
+      }
+
+      const clipboardItem = new ClipboardItem(clipboardItemData)
+      await navigator.clipboard.write([clipboardItem]);
+    }
+
     $effect(() => {
       // clear the document after a session is ended
       if (endSession) {
-        doc.heading = ""
-        doc.body = ""
+        copyToClipboard(clipboardDoc).finally(() => {
+          doc.heading = ""
+          doc.body = ""
+          endSession = false // prevent `if` block rerun
+        });
       }
     })
 </script>
