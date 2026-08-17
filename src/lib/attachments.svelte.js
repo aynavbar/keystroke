@@ -13,7 +13,6 @@ export function trapFocus(node) {
     const current = document.activeElement;
 
     const elements = focusable(); // get all focusable children on the attached element
-    console.log(elements)
     const first = elements.at(0); // the first focusable child
     const last = elements.at(-1); // the last focusable child
 
