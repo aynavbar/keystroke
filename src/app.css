@@ -2,10 +2,13 @@
     padding: 0;
     margin: 0;
     box-sizing: border-box;
+}
+
+body input, body textarea, body{
+    background-color: #fdfcfc;
     font-family: "Merriweather", serif;
     font-optical-sizing: auto;
     font-style: normal;
-    background-color: #fdfcfc;
     font-variation-settings:
       "wdth" 100;
 }
@@ -37,15 +40,4 @@
   font-optical-sizing: auto;
   font-weight: 700;
   font-style: normal;
-}
-
-button {
-    display: flex;
-    align-items: center;
-    padding-inline: 0.5rem;
-    padding-block: 0.3rem;
-    border-radius: 0.25rem;
-    border: 1px solid #9f9f9f;
-    cursor: pointer;
-    font-family: "Inter", sans-serif;
 }
