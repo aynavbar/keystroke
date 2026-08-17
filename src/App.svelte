@@ -21,7 +21,7 @@
 
     // recalculate the word count each time the document body changes
     let wordCount = $derived(doc.body.split(/ /).length)
-    // create a separate copy of the document body to prevent race conditions while copying
+    // create a separate copy of the document body to prevent race conditions while copying to clipboard
     let clipboardDoc = $derived(doc.body)
 
     // toggle the 'End session' button's `disabled` state by evaluating
