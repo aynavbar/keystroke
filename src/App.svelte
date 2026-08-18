@@ -23,9 +23,14 @@
     let showEndSessionDialog = $state(false);
     let endSession = $state(false);
     let showCopyInfoToast = $state(false);
+    let startTime = $state(null);
+    let timeInMinutes = $state(0);
+    let averageWPM = $state(0);
 
     // recalculate the word count each time the document body changes
-    let wordCount = $derived(doc.body.split(/ /).length)
+    // standard tests treat every five characters, including spaces and punctuation, as one word
+    let wordCount = $derived(doc.body.split(/\s+/).length)
+
     // create a separate copy of the document body to prevent race conditions while copying to clipboard
     let clipboardDoc = $derived(doc.body)
 
@@ -62,6 +67,14 @@
         clearTimeout(toastTimeoutID) // cleanup for the toast timeout
       }
     })
+
+    $effect(() => {
+      if (wordCount >= 5 && startTime === null) {
+        startTime = performance.now(); // take a timestamp of when the first 'word' was written
+      } else if (wordCount >= 5) {
+        averageWPM = (wordCount / 5) / timeInMinutes // using minutes for now since there isn't sampling logic to average out multiple wpm samples
+      };
+    })
 </script>
 
 <main>
@@ -74,6 +87,7 @@
             variant="destructive"
             onclick={() => {
               showEndSessionDialog = true
+              timeInMinutes = Math.floor(((performance.now() - startTime) / 1000) / 60); // minutes as whole numbers only
             }}
             disabled={disableSessionEndButton}
         >
@@ -89,16 +103,19 @@
         <div class="end-session-dialog-surface" {@attach trapFocus} transition:fade={{duration: 50}}>
             <div class="end-session-dialog-content">
                 <h1 class="inter-700">End this session ?</h1>
-                <p class="inter-500">{wordCount} words</p>
+                <p class="inter-500">{wordCount} words • {timeInMinutes} minute{timeInMinutes === 1 ? '' : 's'} • {averageWPM === Infinity ? 0 : averageWPM} wpm</p>
                 <div class="actions-row">
                     <Button
                         variant="outlined"
                         onclick={() => {
-                      showEndSessionDialog = false
-                    }}>Keep writing</Button>
+                          showEndSessionDialog = false
+                        }}
+                    >Keep writing</Button>
                     <Button onclick={() => {
                       endSession = true
                       showEndSessionDialog = false
+                      startTime = null // reset the timer and await timer start trigger
+                      averageWPM = 0
                     }}>End session</Button>
                 </div>
             </div>
