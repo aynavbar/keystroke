@@ -25,6 +25,9 @@
     let showSessionAnalytics = $state(false);
     let endSession = $state(false);
     let startTime = $state(null);
+    let formattedMinutes = $derived(
+      `${startTime.getMinutes() < 10 ? `0${startTime.getMinutes()}`: startTime.getMinutes()}`
+    ) // 00 formatting for minutes
     let timeInMinutes = $state(0);
     let averageWPM = $state(0);
     let eraseCount = $state(0); // each time content was removed from the textarea
@@ -144,7 +147,7 @@
         <div class="session-analytics-container" {@attach trapFocus}>
             <div class="session-analytics-card">
                 <div class="heading">
-                    <p>Today, {startTime ? startTime.getHours() : ''}:{startTime ? startTime.getMinutes(): ''}</p>
+                    <p>Today, {startTime ? startTime.getHours() : ''}:{startTime ? formattedMinutes: ''}</p>
                 </div>
                 <div class="at-a-glance">
                     <div>
@@ -318,7 +321,19 @@
         width: 10rem;
         height: 4rem;
         padding: 0.6rem;
-        border-radius: 0.3rem;
+        border-radius: 0.5rem;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+
+    .session-analytics-card .at-a-glance div .label {
+        font-size: 0.8rem;
+    }
+
+    .session-analytics-card .at-a-glance div .data {
+        font-size: 1.2rem;
+        font-weight: 500;
     }
 
     .session-analytics-card .graph-area {
