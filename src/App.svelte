@@ -21,11 +21,13 @@
     })
 
     let showEndSessionDialog = $state(false);
-    let endSession = $state(false);
     let showCopyInfoToast = $state(false);
+    let showSessionAnalytics = $state(false);
+    let endSession = $state(false);
     let startTime = $state(null);
     let timeInMinutes = $state(0);
     let averageWPM = $state(0);
+    let eraseCount = $state(0); // each time content was removed from the textarea
 
     // recalculate the word count each time the document body changes
     // standard tests treat every five characters, including spaces and punctuation, as one word
@@ -70,7 +72,7 @@
 
     $effect(() => {
       if (wordCount >= 5 && startTime === null) {
-        startTime = performance.now(); // take a timestamp of when the first 'word' was written
+        startTime = new Date(); // take a timestamp of when the first 'word' was written
       } else if (wordCount >= 5) {
         averageWPM = (wordCount / 5) / timeInMinutes // using minutes for now since there isn't sampling logic to average out multiple wpm samples
       };
@@ -80,14 +82,23 @@
 <main>
     <div class="content">
         <input bind:value={doc.heading} type="text" id="heading" placeholder="Type a heading">
-        <textarea bind:value={doc.body} id="body" spellcheck="false" placeholder="Write something"></textarea>
+        <textarea
+            bind:value={doc.body}
+            id="body" spellcheck="false"
+            placeholder="Write something"
+            oninput={(event) => {
+              if (event.inputType === "deleteContentBackward" || event.inputType === "deleteContentForward") {
+                eraseCount += 1
+              }
+            }}
+        ></textarea>
     </div>
     <div class="fab">
         <Button
             variant="destructive"
             onclick={() => {
               showEndSessionDialog = true
-              timeInMinutes = Math.floor(((performance.now() - startTime) / 1000) / 60); // minutes as whole numbers only
+              timeInMinutes = Math.floor(((endTime.getTime() - startTime.getTime()) / 1000) / 60); // minutes as whole numbers only
             }}
             disabled={disableSessionEndButton}
         >
@@ -114,6 +125,7 @@
                     <Button onclick={() => {
                       endSession = true
                       showEndSessionDialog = false
+                      showSessionAnalytics = true
                       startTime = null // reset the timer and await timer start trigger
                       averageWPM = 0
                     }}>End session</Button>
@@ -126,6 +138,37 @@
             <div class="copy-info">
                 <p class="inter-400">Copied to clipboard!</p>
             </div>
+        </div>
+    {/if}
+    {#if showSessionAnalytics}
+        <div class="session-analytics-container" {@attach trapFocus}>
+            <div class="session-analytics-card">
+                <div class="heading">
+                    <p>Today, {startTime ? startTime.getHours() : ''}:{startTime ? startTime.getMinutes(): ''}</p>
+                </div>
+                <div class="at-a-glance">
+                    <div>
+                        <p class="label">Duration</p>
+                        <p class="data">{timeInMinutes}</p>
+                    </div>
+                    <div>
+                        <p class="label">Average wpm</p>
+                        <p class="data">{averageWPM === Infinity ? 0 : averageWPM}</p>
+                    </div>
+                    <div>
+                        <p class="label">Backspaces</p>
+                        <p class="data">{eraseCount}</p>
+                    </div>
+                </div>
+                <div class="graph-area"></div>
+            </div>
+            <Button
+                onclick={() => {
+                  showSessionAnalytics = false;
+                }}
+            >
+                Start new session
+            </Button>
         </div>
     {/if}
 </main>
@@ -217,6 +260,7 @@
         background-color: #e2ffe2;
         display: flex;
         align-items: center;
+        z-index: 999999;
     }
 
     .copy-info-toast-container .copy-info {
@@ -228,5 +272,56 @@
 
     .copy-info p {
         background-color: transparent;
+    }
+
+    .session-analytics-container {
+        position: fixed;
+        z-index: 99999;
+        width: 100%;
+        height: 100%;
+        background-color: #fdfcfc;
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .session-analytics-card {
+        width: 50rem;
+        height: 25rem;
+        display: flex;
+        flex-direction: column;
+        border: 1px solid #cecece;
+        border-radius: 0.9rem;
+        font-family: "Inter", sans-serif;
+    }
+
+    .session-analytics-card .heading {
+        display: flex;
+        padding-inline: 2rem;
+        padding-block-start: 1.3rem;
+    }
+
+    .session-analytics-card .heading p {
+        font-weight: 500;
+    }
+
+    .session-analytics-card .at-a-glance {
+        display: flex;
+        justify-content: space-between;
+        padding: 2rem;
+    }
+
+    .session-analytics-card .at-a-glance div {
+        background-color: #dedede;
+        width: 10rem;
+        height: 4rem;
+        padding: 0.6rem;
+        border-radius: 0.3rem;
+    }
+
+    .session-analytics-card .graph-area {
+        flex: 1;
     }
 </style>
