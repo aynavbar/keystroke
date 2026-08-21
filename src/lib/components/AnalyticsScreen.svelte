@@ -29,7 +29,11 @@
                 <p class="data">{sessionTypingState.eraseCount}</p>
             </div>
         </div>
-        <div class="graph-area"></div>
+        <div class="graph-area">
+            <div class="graph-content to-be-implemented">
+                <p>Graph feature in the upcoming release.</p>
+            </div>
+        </div>
     </div>
     <Button
         onclick={() => {
@@ -105,5 +109,17 @@
 
     .session-analytics-card .graph-area {
         flex: 1;
+    }
+
+    .session-analytics-card .graph-area .graph-content.to-be-implemented {
+        width: 100%;
+        height: 100%;
+        background-color: #dedede;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: #7d7d7d;
     }
 </style>
