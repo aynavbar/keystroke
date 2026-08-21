@@ -9,18 +9,8 @@
     import Toast from "./lib/components/Toast.svelte";
 
     let doc = $state({
-      heading: "Lorem Ipsum",
-      body: `
-      Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean odio elit, eleifend at sem eget, sodales facilisis dui. Mauris pharetra id dolor vitae tempus. Etiam auctor libero nunc, eu tincidunt mi laoreet in. Cras ac augue nisi. Maecenas felis tellus, aliquam et hendrerit non, imperdiet vitae leo. Nunc eget nisl faucibus, vulputate nisi pharetra, porta neque. Nullam ultrices massa urna, a feugiat arcu tristique nec. Donec finibus ante arcu, eget accumsan tellus feugiat non. Aenean dolor metus, mattis vel diam a, feugiat viverra urna. Nunc luctus aliquet quam eget finibus. Mauris consequat massa id massa scelerisque congue vel et nunc. Etiam convallis dignissim mi, at interdum justo finibus eget. Phasellus porta sed lorem quis egestas. Quisque consequat aliquam neque.
-
-      Sed a lectus tortor. Suspendisse vestibulum magna libero, a tristique tellus suscipit sed. Fusce facilisis enim quam, vel ornare tortor venenatis vitae. Quisque eu sem mattis, ullamcorper libero sit amet, porta nisi. Nulla porttitor mi viverra leo suscipit placerat. Sed vitae condimentum lorem, nec tempor mi. Fusce suscipit luctus magna et dignissim. Aenean efficitur scelerisque arcu, eu viverra nulla malesuada et. Nam tincidunt, lectus lobortis pulvinar tempor, orci dui efficitur leo, vitae egestas nibh metus laoreet erat.
-
-      Fusce eleifend consectetur laoreet. Mauris vitae blandit velit, a luctus urna. Mauris nec enim id tellus dignissim laoreet. Sed vel turpis vitae ante vulputate cursus. Ut ullamcorper eros libero, ac interdum nisi venenatis in. Fusce bibendum in sem non imperdiet. Morbi pharetra pulvinar sapien, sit amet tempor neque vehicula sit amet. Maecenas ac enim odio.
-
-      Sed enim metus, sollicitudin sed eleifend id, auctor quis ante. Sed luctus interdum velit, id aliquet ligula efficitur quis. Mauris vitae diam pulvinar, imperdiet justo ut, dictum elit. Cras porta fermentum sem, ut pellentesque eros iaculis rhoncus. Maecenas at consectetur orci. Morbi mollis enim non nulla molestie rhoncus. Nunc euismod metus non consectetur faucibus. Nulla posuere mattis nulla a laoreet. Aenean suscipit dolor quis lorem faucibus feugiat. Ut eros nisl, hendrerit a nisl eu, venenatis dictum magna. Nulla in rutrum ex, id porttitor nunc. Integer euismod eros ac ex pretium, pretium viverra neque tempus. Quisque iaculis bibendum lacus et volutpat.
-
-      Curabitur sagittis ligula et enim auctor interdum. Nullam et cursus diam. Ut eget purus nisl. Nullam ut eleifend massa, ac vestibulum libero. Aliquam consectetur, odio non commodo dictum, lorem dui laoreet ex, non volutpat diam erat eget lacus. Morbi dignissim dui at pharetra gravida. Aenean quis efficitur ligula. Integer aliquet commodo diam eget porta. Ut luctus augue enim, eu tempor ligula facilisis eget. Suspendisse fermentum turpis ut felis elementum elementum. Quisque dolor lacus, ullamcorper vitae velit vitae, dapibus ultricies dui.
-      `
+      heading: "",
+      body: ""
     })
 
     let showCopyInfoToast = $state(false);
