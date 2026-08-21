@@ -45,6 +45,7 @@
     .end-session-dialog-content {
         width: 25rem;
         padding: 1.4rem;
+        margin-inline: 1rem;
         background-color: #fff;
         border-radius: 0.6rem;
     }

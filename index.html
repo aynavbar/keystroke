@@ -9,9 +9,27 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=stop" />
     <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Merriweather:ital,opsz,wght@0,18..144,300..900;1,18..144,300..900&display=swap" rel="stylesheet">
+    <style>
+        .use-desktop {
+            display: flex;
+            height: 100vh;
+            justify-content: center;
+            align-items: center;
+            font-family: "Inter", sans-serif
+        }
+        @media (min-width: 672px) {
+            .use-desktop {
+                display: none;
+            }
+        }
+    </style>
   </head>
   <body>
-    <div id="app"></div>
+    <div id="app">
+        <div class="use-desktop">
+            <p>Please use a wider screen (or desktop browser)</p>
+        </div>
+    </div>
     <script type="module" src="/src/main.js"></script>
   </body>
 </html>

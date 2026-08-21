@@ -126,9 +126,15 @@
 
 <style>
     main {
-        display: flex;
+        display: none;
         flex-direction: column;
         height: 100vh;
+    }
+
+    @media (min-width: 672px) {
+        main {
+            display: flex;
+        }
     }
 
     .content {
@@ -142,6 +148,7 @@
 
     input, textarea {
         padding-block: 0.6rem;
+        padding-inline: 1rem;
         outline: none;
         border: none;
     }
