@@ -59,8 +59,32 @@
     $effect(() => {
       if (wordCount >= 5 && sessionTypingState.startTime === null) {
         sessionTypingState.startTime = new Date(); // take a timestamp of when the first 'word' was written
-      } else if (wordCount >= 5) {
-        sessionTypingState.averageWPM = (wordCount / 5) / sessionTypingState.timeInMinutes // using minutes for now since there isn't sampling logic to average out multiple wpm samples
+      }
+    })
+
+    $effect(() => {
+      if (sessionTypingState.startTime === null) return;
+
+      const intervalId = setInterval(() => {
+        let currentTime = new Date();
+        let elapsedSeconds = (currentTime.getTime() - sessionTypingState.startTime.getTime()) / 1000;
+        let elapsedMinutes = elapsedSeconds / 60;
+
+        let currentWPM = 0;
+        if (elapsedMinutes > 0) {
+          currentWPM = (wordCount / 5) / elapsedMinutes;
+        }
+
+        sessionTypingState.wpmHistory.push({ t: elapsedSeconds, wpm: currentWPM });
+
+        // Compute average WPM
+        let totalWPM = sessionTypingState.wpmHistory.reduce((sum, entry) => sum + entry.wpm, 0);
+        sessionTypingState.averageWPM = Math.floor(totalWPM / sessionTypingState.wpmHistory.length);
+
+      }, 2000); // sample every 2 seconds
+
+      return () => {
+        clearInterval(intervalId);
       };
     })
 </script>
@@ -75,6 +99,10 @@
             oninput={(event) => {
               if (event.inputType === "deleteContentBackward" || event.inputType === "deleteContentForward") {
                 sessionTypingState.eraseCount += 1
+                if (sessionTypingState.startTime) {
+                  let elapsedSeconds = (new Date().getTime() - sessionTypingState.startTime.getTime()) / 1000;
+                  sessionTypingState.backspaceHistory.push(elapsedSeconds);
+                }
               }
             }}
         ></textarea>

@@ -8,5 +8,7 @@ export let sessionTypingState = $state({
   averageWPM: 0,
   eraseCount: 0, // each time content was removed from the textarea
   startTime: null,
-  timeInMinutes: 0
+  timeInMinutes: 0,
+  wpmHistory: [],
+  backspaceHistory: []
 })

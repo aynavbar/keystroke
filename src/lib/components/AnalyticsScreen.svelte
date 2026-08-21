@@ -6,8 +6,35 @@
     import Button from "./Button.svelte";
 
     let formattedMinutes = $derived(
-      `${sessionTypingState.startTime.getMinutes() < 10 ? `0${sessionTypingState.startTime.getMinutes()}`: sessionTypingState.startTime.getMinutes()}`
+      `${sessionTypingState.startTime?.getMinutes() < 10 ? `0${sessionTypingState.startTime?.getMinutes()}`: sessionTypingState.startTime?.getMinutes()}`
     ) // 00 formatting for minutes
+
+    let svgWidth = 700;
+    let svgHeight = 200;
+
+    // max values for scaling
+    let maxTime = $derived(
+      Math.max(
+        sessionTypingState.timeInMinutes * 60,
+        ...sessionTypingState.wpmHistory.map(d => d.t),
+        ...sessionTypingState.backspaceHistory,
+        1
+      )
+    );
+    let maxWPM = $derived(
+      Math.max(
+        ...sessionTypingState.wpmHistory.map(d => d.wpm),
+        10
+      )
+    );
+
+    let polylinePoints = $derived(
+      sessionTypingState.wpmHistory.map(d => {
+        let x = (d.t / maxTime) * svgWidth;
+        let y = svgHeight - (d.wpm / maxWPM) * svgHeight;
+        return `${x},${y}`;
+      }).join(" ")
+    );
 </script>
 
 <div class="session-analytics-container" {@attach trapFocus}>
@@ -30,8 +57,31 @@
             </div>
         </div>
         <div class="graph-area">
-            <div class="graph-content to-be-implemented">
-                <p>Graph feature in the upcoming release.</p>
+            <div class="graph-content">
+                <svg width={svgWidth} height={svgHeight} viewBox={`0 0 ${svgWidth} ${svgHeight}`}>
+                    <!-- Grid line for base (wpm = 0) -->
+                    <line x1="0" y1={svgHeight} x2={svgWidth} y2={svgHeight} stroke="#cecece" stroke-width="2" />
+
+                    <!-- WPM Line Graph -->
+                    {#if sessionTypingState.wpmHistory.length > 0}
+                        <polyline
+                            points={polylinePoints}
+                            fill="none"
+                            stroke="#007BFF"
+                            stroke-width="2"
+                        />
+                    {/if}
+
+                    <!-- Backspaces represented as points on the x-axis -->
+                    {#each sessionTypingState.backspaceHistory as t}
+                        <circle
+                            cx={(t / maxTime) * svgWidth}
+                            cy={svgHeight}
+                            r="4"
+                            fill="#FF0000"
+                        />
+                    {/each}
+                </svg>
             </div>
         </div>
     </div>
@@ -41,6 +91,8 @@
           sessionTypingState.startTime = null // reset the timer and await timer start trigger
           sessionTypingState.averageWPM = 0
           sessionTypingState.eraseCount = 0
+          sessionTypingState.wpmHistory = []
+          sessionTypingState.backspaceHistory = []
         }}
     >
         Start new session
@@ -109,17 +161,16 @@
 
     .session-analytics-card .graph-area {
         flex: 1;
-    }
-
-    .session-analytics-card .graph-area .graph-content.to-be-implemented {
-        width: 100%;
-        height: 100%;
-        background-color: #dedede;
         display: flex;
         justify-content: center;
         align-items: center;
-        font-size: 0.9rem;
-        font-weight: 600;
-        color: #7d7d7d;
+    }
+
+    .session-analytics-card .graph-area .graph-content {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
     }
 </style>
