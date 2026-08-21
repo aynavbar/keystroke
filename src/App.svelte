@@ -101,6 +101,7 @@
             variant="destructive"
             onclick={() => {
               showEndSessionDialog = true
+              let endTime = new Date();
               timeInMinutes = Math.floor(((endTime.getTime() - startTime.getTime()) / 1000) / 60); // minutes as whole numbers only
             }}
             disabled={disableSessionEndButton}
@@ -129,8 +130,6 @@
                       endSession = true
                       showEndSessionDialog = false
                       showSessionAnalytics = true
-                      startTime = null // reset the timer and await timer start trigger
-                      averageWPM = 0
                     }}>End session</Button>
                 </div>
             </div>
@@ -151,7 +150,7 @@
                 </div>
                 <div class="at-a-glance">
                     <div>
-                        <p class="label">Duration</p>
+                        <p class="label">Duration (minutes)</p>
                         <p class="data">{timeInMinutes}</p>
                     </div>
                     <div>
@@ -168,6 +167,9 @@
             <Button
                 onclick={() => {
                   showSessionAnalytics = false;
+                  startTime = null // reset the timer and await timer start trigger
+                  averageWPM = 0
+                  eraseCount = 0
                 }}
             >
                 Start new session
