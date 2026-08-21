@@ -3,14 +3,14 @@
     import type { EventHandler } from "svelte/elements";
 
     interface ButtonProps {
-      variant: "default" | "outlined" | "destructive"
-      onclick: EventHandler
-      disabled: boolean
       className: string
       children: Snippet
+      disabled: boolean
+      onclick: EventHandler
+      variant: "default" | "outlined" | "destructive"
     }
 
-    let { variant = "default", onclick, disabled, className, children }: ButtonProps = $props();
+    let { className, children, disabled, onclick, variant = "default" }: ButtonProps = $props();
 </script>
 
 <button

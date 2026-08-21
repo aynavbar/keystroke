@@ -1,9 +1,12 @@
 <script>
-    import { slide, fade } from "svelte/transition";
-
     import { trapFocus } from "./lib/attachments.svelte";
 
+    import { sessionEndState, sessionTypingState } from "./lib/store.svelte";
+
+    import AnalyticsScreen from "./lib/components/AnalyticsScreen.svelte";
     import Button from "./lib/components/Button.svelte";
+    import Dialog from "./lib/components/Dialog.svelte";
+    import Toast from "./lib/components/Toast.svelte";
 
     let doc = $state({
       heading: "Lorem Ipsum",
@@ -20,17 +23,7 @@
       `
     })
 
-    let showEndSessionDialog = $state(false);
     let showCopyInfoToast = $state(false);
-    let showSessionAnalytics = $state(false);
-    let endSession = $state(false);
-    let startTime = $state(null);
-    let formattedMinutes = $derived(
-      `${startTime.getMinutes() < 10 ? `0${startTime.getMinutes()}`: startTime.getMinutes()}`
-    ) // 00 formatting for minutes
-    let timeInMinutes = $state(0);
-    let averageWPM = $state(0);
-    let eraseCount = $state(0); // each time content was removed from the textarea
 
     // recalculate the word count each time the document body changes
     // standard tests treat every five characters, including spaces and punctuation, as one word
@@ -55,8 +48,8 @@
 
     $effect(() => {
       // clear the document after a session is ended
-      if (!endSession) return;
-      endSession = false // prevent effect logic rerun during `then` callback run
+      if (!sessionEndState.endSession) return;
+      sessionEndState.endSession = false // prevent effect logic rerun during `then` callback run
       let toastTimeoutID;
       copyToClipboard(clipboardDoc)
         .finally(() => {
@@ -74,10 +67,10 @@
     })
 
     $effect(() => {
-      if (wordCount >= 5 && startTime === null) {
-        startTime = new Date(); // take a timestamp of when the first 'word' was written
+      if (wordCount >= 5 && sessionTypingState.startTime === null) {
+        sessionTypingState.startTime = new Date(); // take a timestamp of when the first 'word' was written
       } else if (wordCount >= 5) {
-        averageWPM = (wordCount / 5) / timeInMinutes // using minutes for now since there isn't sampling logic to average out multiple wpm samples
+        sessionTypingState.averageWPM = (wordCount / 5) / sessionTypingState.timeInMinutes // using minutes for now since there isn't sampling logic to average out multiple wpm samples
       };
     })
 </script>
@@ -91,7 +84,7 @@
             placeholder="Write something"
             oninput={(event) => {
               if (event.inputType === "deleteContentBackward" || event.inputType === "deleteContentForward") {
-                eraseCount += 1
+                sessionTypingState.eraseCount += 1
               }
             }}
         ></textarea>
@@ -100,9 +93,9 @@
         <Button
             variant="destructive"
             onclick={() => {
-              showEndSessionDialog = true
+              sessionEndState.showEndSessionDialog = true
               let endTime = new Date();
-              timeInMinutes = Math.floor(((endTime.getTime() - startTime.getTime()) / 1000) / 60); // minutes as whole numbers only
+              sessionTypingState.timeInMinutes = Math.floor(((endTime.getTime() - sessionTypingState.startTime.getTime()) / 1000) / 60); // minutes as whole numbers only
             }}
             disabled={disableSessionEndButton}
         >
@@ -114,67 +107,20 @@
             </span>
         </Button>
     </div>
-    {#if showEndSessionDialog}
-        <div class="end-session-dialog-surface" {@attach trapFocus} transition:fade={{duration: 50}}>
-            <div class="end-session-dialog-content">
-                <h1 class="inter-700">End this session ?</h1>
-                <p class="inter-500">{wordCount} words • {timeInMinutes} minute{timeInMinutes === 1 ? '' : 's'} • {averageWPM === Infinity ? 0 : averageWPM} wpm</p>
-                <div class="actions-row">
-                    <Button
-                        variant="outlined"
-                        onclick={() => {
-                          showEndSessionDialog = false
-                        }}
-                    >Keep writing</Button>
-                    <Button onclick={() => {
-                      endSession = true
-                      showEndSessionDialog = false
-                      showSessionAnalytics = true
-                    }}>End session</Button>
-                </div>
-            </div>
-        </div>
+    {#if sessionEndState.showEndSessionDialog}
+        <Dialog
+            sessionWordCount={wordCount}
+            sessionTimeInMinutes={sessionTypingState.timeInMinutes}
+            sessionAverageWPM={sessionTypingState.averageWPM}
+        />
     {/if}
     {#if showCopyInfoToast}
-        <div class="copy-info-toast-container" transition:slide={{axis: "y"}}>
-            <div class="copy-info">
-                <p class="inter-400">Copied to clipboard!</p>
-            </div>
-        </div>
+        <Toast
+            message="Copied to Clipboard!"
+        />
     {/if}
-    {#if showSessionAnalytics}
-        <div class="session-analytics-container" {@attach trapFocus}>
-            <div class="session-analytics-card">
-                <div class="heading">
-                    <p>Today, {startTime ? startTime.getHours() : ''}:{startTime ? formattedMinutes: ''}</p>
-                </div>
-                <div class="at-a-glance">
-                    <div>
-                        <p class="label">Duration (minutes)</p>
-                        <p class="data">{timeInMinutes}</p>
-                    </div>
-                    <div>
-                        <p class="label">Average wpm</p>
-                        <p class="data">{averageWPM === Infinity ? 0 : averageWPM}</p>
-                    </div>
-                    <div>
-                        <p class="label">Backspaces</p>
-                        <p class="data">{eraseCount}</p>
-                    </div>
-                </div>
-                <div class="graph-area"></div>
-            </div>
-            <Button
-                onclick={() => {
-                  showSessionAnalytics = false;
-                  startTime = null // reset the timer and await timer start trigger
-                  averageWPM = 0
-                  eraseCount = 0
-                }}
-            >
-                Start new session
-            </Button>
-        </div>
+    {#if sessionEndState.showSessionAnalytics}
+        <AnalyticsScreen />
     {/if}
 </main>
 
@@ -219,126 +165,5 @@
         right: 1.2rem;
         z-index: 9999;
         background-color: transparent;
-    }
-
-    .end-session-dialog-surface {
-        position: fixed;
-        background-color: #00000030;
-        width: 100%;
-        height: 100%;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        z-index: 10000;
-    }
-
-    .end-session-dialog-content {
-        width: 25rem;
-        padding: 1.4rem;
-        background-color: #fff;
-        border-radius: 0.6rem;
-    }
-
-    .end-session-dialog-content h1 {
-        font-size: 1.1rem;
-        font-weight: 600;
-    }
-
-    .end-session-dialog-content p {
-        padding-block: 0.5rem;
-        font-size: 0.8rem;
-        color: #8a8a8a;
-    }
-
-    .end-session-dialog-content .actions-row {
-        display: flex;
-        gap: 5px;
-        justify-content: flex-end;
-    }
-
-    .copy-info-toast-container {
-        position: fixed;
-        bottom: 0;
-        width: 100%;
-        height: 4rem;
-        inset-inline: 0;
-        background-color: #e2ffe2;
-        display: flex;
-        align-items: center;
-        z-index: 999999;
-    }
-
-    .copy-info-toast-container .copy-info {
-        color: green;
-        height: fit-content;
-        background-color: transparent;
-        padding-inline-start: 2rem;
-    }
-
-    .copy-info p {
-        background-color: transparent;
-    }
-
-    .session-analytics-container {
-        position: fixed;
-        z-index: 99999;
-        width: 100%;
-        height: 100%;
-        background-color: #fdfcfc;
-        display: flex;
-        flex-direction: column;
-        gap: 1rem;
-        justify-content: center;
-        align-items: center;
-    }
-
-    .session-analytics-card {
-        width: 50rem;
-        height: 25rem;
-        display: flex;
-        flex-direction: column;
-        border: 1px solid #cecece;
-        border-radius: 0.9rem;
-        font-family: "Inter", sans-serif;
-    }
-
-    .session-analytics-card .heading {
-        display: flex;
-        padding-inline: 2rem;
-        padding-block-start: 1.3rem;
-    }
-
-    .session-analytics-card .heading p {
-        font-weight: 500;
-    }
-
-    .session-analytics-card .at-a-glance {
-        display: flex;
-        justify-content: space-between;
-        padding: 2rem;
-    }
-
-    .session-analytics-card .at-a-glance div {
-        background-color: #dedede;
-        width: 10rem;
-        height: 4rem;
-        padding: 0.6rem;
-        border-radius: 0.5rem;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-    }
-
-    .session-analytics-card .at-a-glance div .label {
-        font-size: 0.8rem;
-    }
-
-    .session-analytics-card .at-a-glance div .data {
-        font-size: 1.2rem;
-        font-weight: 500;
-    }
-
-    .session-analytics-card .graph-area {
-        flex: 1;
     }
 </style>
