@@ -60,7 +60,7 @@
       if (wordCount >= 5 && sessionTypingState.startTime === null) {
         sessionTypingState.startTime = new Date(); // take a timestamp of when the first 'word' was written
       } else if (wordCount >= 5) {
-        sessionTypingState.averageWPM = (wordCount / 5) / sessionTypingState.timeInMinutes // using minutes for now since there isn't sampling logic to average out multiple wpm samples
+        sessionTypingState.averageWPM = Math.floor(((wordCount / 5) / sessionTypingState.timeInMinutes) * 100) / 100 // using minutes for now since there isn't sampling logic to average out multiple wpm samples
       };
     })
 </script>
