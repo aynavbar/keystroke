@@ -1,6 +1,80 @@
 <script lang="ts">
+    import { onMount } from "svelte";
+    import { fade } from "svelte/transition";
+
     let docHeading = $state("");
     let docBody = $state("");
+
+    let isDialogOpen = $state(false);
+
+    function clearDoc() {
+        docHeading = "";
+        docBody = "";
+    }
+
+    function openDialog() {
+        isDialogOpen = true;
+    }
+
+    function closeDialog(event?: Event) {
+        isDialogOpen = false;
+    }
+
+    function startNewSession() {
+        clearDoc();
+        closeDialog();
+    }
+
+    /**
+     * Returns a timestamp in the 12 hour system plus the date
+    */
+    function formatTime(timestamp: Date): string {
+        let isAM = true;
+        const hour = (() => {
+            const timestampHours = timestamp.getHours();
+            if (timestampHours > 12) {
+                isAM = false;
+                return timestampHours - 12;
+            };
+            return timestampHours;
+        })();
+
+        const minutes = (() => {
+            const timestampMinutes = timestamp.getMinutes();
+            if (timestampMinutes >= 10) return timestampMinutes;
+            return `0${timestampMinutes}`
+        })();
+
+        const month = (() => {
+            const monthsLookup = [
+                "Jan",
+                "Feb",
+                "Mar",
+                "Apr",
+                "May",
+                "Jun",
+                "Jul",
+                "Aug",
+                "Sep",
+                "Oct",
+                "Nov",
+                "Dec"
+            ];
+
+            return monthsLookup[(timestamp.getMonth())];
+        })();
+
+        const formattedTime = `${hour}:${minutes} ${isAM ? 'AM' : 'PM'} · ${month} ${timestamp.getDate()}`;
+        return formattedTime
+    }
+
+    onMount(() => {
+        window.addEventListener("keydown", (event) => {
+            if (event.key === "Escape" && isDialogOpen) {
+                closeDialog();
+            }
+        })
+    })
 </script>
 
 <main>
@@ -14,6 +88,35 @@
         spellcheck="false"
         ></textarea>
     </div>
+    <div class="fab-container">
+        <button onclick={openDialog} disabled={docBody ? false : true}>
+            <span class="material-symbols-rounded">stop</span>
+            <span>End session</span>
+        </button>
+    </div>
+    {#if isDialogOpen}
+        <!-- svelte-ignore a11y_click_events_have_key_events -->
+        <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
+        <!-- svelte-ignore a11y_no_static_element_interactions -->
+        <div transition:fade={{duration: 70}} class="dialog-container" onclick={closeDialog}>
+            <!-- svelte-ignore a11y_click_events_have_key_events -->
+            <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
+            <!-- svelte-ignore a11y_no_static_element_interactions -->
+            <!-- svelte-ignore a11y_interactive_supports_focus -->
+            <div class="dialog" role="dialog" onclick={(event) => {
+                event.stopPropagation();
+            }}>
+                <header>
+                    <h1>Session ended</h1>
+                    <h2>{formatTime(new Date())}</h2>
+                </header>
+                <footer>
+                    <button onclick={closeDialog}>Close</button>
+                    <button onclick={startNewSession}>Start new session</button>
+                </footer>
+            </div>
+        </div>
+    {/if}
 </main>
 
 <style>
@@ -24,7 +127,7 @@
 
     .background {
         height: 100%;
-        background-color: #000000;
+        background-color: var(--background);
     }
 
     .input-controls-container {
@@ -57,5 +160,85 @@
         font-weight: 500;
         line-height: 2rem;
         scrollbar-width: none;
+    }
+
+    .fab-container {
+        position: fixed;
+        right: 2rem;
+        bottom: 2rem;
+    }
+
+    .fab-container button {
+        padding-inline: 1.1rem;
+        padding-block: 0.7rem;
+        border-radius: 50px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .fab-container button span {
+        color: var(--on-accent);
+    }
+
+    .fab-container button span.material-symbols-rounded {
+        font-size: 1.5rem;
+    }
+
+    .dialog-container {
+        position: fixed;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        backdrop-filter: blur(5px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .dialog-container .dialog {
+        width: 35rem;
+        background-color: var(--secondary-background);
+        border-radius: 1rem;
+        border: var(--border);
+        padding: 1rem;
+    }
+
+    .dialog header h1 {
+        font-size: 0.8rem;
+        font-weight: 500;
+        color: var(--secondary-text);
+        padding-bottom: 1rem;
+    }
+
+    .dialog header h2 {
+        font-size: 1.2rem;
+    }
+
+    .dialog footer {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+    }
+
+    .dialog footer button {
+        padding-inline: 0.5rem;
+        padding-block: 0.6rem;
+        border-radius: 8px;
+    }
+
+    .dialog footer button:nth-child(1) {
+        background: none;
+        transition: background-color 0.2s ease;
+    }
+
+    .dialog footer button:nth-child(1):hover {
+        background-color: #2c2c2c52;
+    }
+
+    .dialog footer button:nth-child(2) {
+        background-color: var(--accent);
+        color: var(--on-accent);
     }
 </style>

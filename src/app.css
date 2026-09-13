@@ -1,5 +1,14 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
 
+:root {
+    --background: #000000;
+    --secondary-background: #101010;
+    --accent: #ffffff; /* used both for text and as the main accent*/
+    --on-accent: #1a1a1a;
+    --secondary-text: #787878;
+    --border: 1px solid #232323;
+}
+
 * {
     margin: 0;
     padding: 0;
@@ -7,9 +16,14 @@
     font-family: "Inter", sans-serif;
     font-optical-sizing: auto;
     font-style: normal;
-    color: #ffffff;
+    color: var(--accent);
 }
 
 html {
     font-size: 20px;
+}
+
+button {
+    border: none;
+    cursor: pointer;
 }
