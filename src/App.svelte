@@ -72,6 +72,12 @@
         window.addEventListener("keydown", (event) => {
             if (event.key === "Escape" && isDialogOpen) {
                 closeDialog();
+                return;
+            }
+
+            if (event.key === "Escape" && !isDialogOpen && docBody) {
+                openDialog();
+                return;
             }
         })
     })
