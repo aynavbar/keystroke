@@ -34,6 +34,8 @@
     function startNewSession() {
         clearDoc();
         closeDialog();
+        
+        // reset stats
         wordCount = 0;
         wpm = 0;
         duration = "";
