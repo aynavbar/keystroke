@@ -11,12 +11,16 @@
 
     let isDialogOpen = $state(false);
 
-    let wordCount = $state(0);
+    let wordCount = $derived(cleanedDocBody.split(/\s+/g).length);
     let wpm = $state(0);
     let duration = $state("");
     let deletionCount = $state(0);
     
-    let startTime: number | null;
+    let samples: Array<any> = $state([])
+
+    let startTime: number | null = $state(null);
+    let lastWordCount = 0;
+    let lastSampleTime: number | null;
 
     function clearDoc() {
         docHeading = "";
@@ -41,6 +45,23 @@
         duration = "";
         deletionCount = 0;
         startTime = null;
+    }
+
+    function getWindowedWPM() {
+        const now = performance.now();
+        if (lastSampleTime && startTime) { 
+            const durationInMs = now - lastSampleTime; // actual time passed since last sample
+            const wordsAdded = wordCount - lastWordCount; // word count for this sindow
+            const wpm = wordsAdded / (durationInMs / 60000);
+
+            samples.push({
+              elapsedMs: now - startTime,
+              wpm
+            });
+
+            lastSampleTime = now;
+            lastWordCount = wordCount;
+        }
     }
 
     /**
@@ -109,8 +130,6 @@
 
     $effect(() => {
         if (isDialogOpen) {
-            wordCount = cleanedDocBody.split(/\s+/g).length;
-
             if (startTime) {
                 const durationInMs = performance.now() - startTime;
                 
@@ -131,6 +150,19 @@
             }
         }
     })
+
+    $effect(() => {
+        let intervalId: number | null;
+        if (startTime) {
+            intervalId = setInterval(getWindowedWPM, (15000))
+        }
+
+        return () => {
+            if (intervalId) {
+                clearInterval(intervalId);
+            }
+        }
+    })
 </script>
 
 <main>
@@ -140,7 +172,10 @@
         <textarea
         bind:value={docBody}
         onkeyup={(event) => {
-            if (docBody && !startTime) { startTime = performance.now() }
+            if (docBody && !startTime) {
+                startTime = performance.now();
+                lastSampleTime = startTime;
+            }
             if (event.key === "Delete" || event.key === "Backspace") { deletionCount += 1}
         }}
         id="body"
