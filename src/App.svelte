@@ -2,10 +2,14 @@
     import { onMount } from "svelte";
     import { fade } from "svelte/transition";
 
+    import StatCard from "./components/StatCard.svelte";
+
     let docHeading = $state("");
     let docBody = $state("");
 
     let isDialogOpen = $state(false);
+
+    let wordCount = $derived(docBody.trim().split(/\s+/g).length)
 
     function clearDoc() {
         docHeading = "";
@@ -123,6 +127,12 @@
                     <h1>Session ended</h1>
                     <h2>{formatTime(new Date())}</h2>
                 </header>
+                <div class="stat-row">
+                    <StatCard
+                        data={wordCount}
+                        label="Word count"
+                    />
+                </div>
                 <footer>
                     <button onclick={closeDialog}>Close</button>
                     <button onclick={startNewSession}>Start new session</button>
@@ -227,6 +237,13 @@
 
     .dialog header h2 {
         font-size: 1.2rem;
+    }
+
+    .dialog .stat-row {
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+        padding-block: 1rem;
     }
 
     .dialog footer {
