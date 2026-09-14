@@ -20,7 +20,7 @@
         isDialogOpen = true;
     }
 
-    function closeDialog(event?: Event) {
+    function closeDialog() {
         isDialogOpen = false;
     }
 
