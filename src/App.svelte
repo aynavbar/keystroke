@@ -256,6 +256,7 @@
         padding-inline: 0.5rem;
         padding-block: 0.6rem;
         border-radius: 8px;
+        font-weight: 600;
     }
 
     .dialog footer button:nth-child(1) {
