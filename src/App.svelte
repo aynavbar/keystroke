@@ -7,9 +7,16 @@
     let docHeading = $state("");
     let docBody = $state("");
 
+    let cleanedDocBody = $derived(docBody.trim());
+
     let isDialogOpen = $state(false);
 
-    let wordCount = $derived(docBody.trim().split(/\s+/g).length)
+    let wordCount = $state(0);
+    let wpm = $state(0);
+    let duration = $state("");
+    let deletionCount = $state(0);
+    
+    let startTime: number | null;
 
     function clearDoc() {
         docHeading = "";
@@ -27,6 +34,11 @@
     function startNewSession() {
         clearDoc();
         closeDialog();
+        wordCount = 0;
+        wpm = 0;
+        duration = "";
+        deletionCount = 0;
+        startTime = null;
     }
 
     /**
@@ -92,6 +104,31 @@
             }
         })
     })
+
+    $effect(() => {
+        if (isDialogOpen) {
+            wordCount = cleanedDocBody.split(/\s+/g).length;
+
+            if (startTime) {
+                const durationInMs = performance.now() - startTime;
+                
+                const minutes = Math.floor(durationInMs / 60000);
+                const seconds = (() => {
+                    let rawSeconds = Math.floor(durationInMs / 1000) % 60;
+
+                    if (rawSeconds < 10) {
+                        return `0${rawSeconds}`;
+                    }
+
+                    return rawSeconds;
+                })();
+
+                wpm = Math.floor((cleanedDocBody.length / 5) / (durationInMs / 60000));
+
+                duration = `${minutes}:${seconds}`;
+            }
+        }
+    })
 </script>
 
 <main>
@@ -100,6 +137,10 @@
         <input bind:value={docHeading} type="text" id="heading" placeholder="Untitled">
         <textarea
         bind:value={docBody}
+        onkeyup={(event) => {
+            if (docBody && !startTime) { startTime = performance.now() }
+            if (event.key === "Delete" || event.key === "Backspace") { deletionCount += 1}
+        }}
         id="body"
         placeholder="Start writing..."
         spellcheck="false"
@@ -131,6 +172,14 @@
                     <StatCard
                         data={wordCount}
                         label="Word count"
+                    />
+                    <StatCard
+                        data={wpm || 1}
+                        label="Words per minute"
+                    />
+                    <StatCard
+                        data={duration}
+                        label="Session duration"
                     />
                 </div>
                 <footer>
