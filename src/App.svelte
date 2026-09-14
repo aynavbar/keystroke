@@ -32,10 +32,17 @@
         let isAM = true;
         const hour = (() => {
             const timestampHours = timestamp.getHours();
-            if (timestampHours > 12) {
+            /**
+             * Changing from AM to PM with this logic ensures
+             * midday isn't labelled as AM and anything after is converted to the
+             * 12 hour system
+            */
+            if (timestampHours >= 12) { // anything from midday onwards get's labelled as PM
                 isAM = false;
-                return timestampHours - 12;
             };
+            if (timestampHours >= 13) {
+                return timestampHours - 12;
+            }
             return timestampHours;
         })();
 
