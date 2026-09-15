@@ -8,7 +8,7 @@
 </script>
 
 <div class="stat-card">
-    <p class="data">{data}</p>
+    <p class="data {label === 'Times deleted' && 'text-red'}">{data}</p>
     <p class="label">{label}</p>
 </div>
 
@@ -27,6 +27,10 @@
     .data {
         font-size: 1.5rem;
         font-weight: 800;
+    }
+
+    .data.text-red {
+        color: #ff3434;
     }
 
     .label {
