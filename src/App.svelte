@@ -16,7 +16,7 @@
     let duration = $state("");
     let deletionCount = $state(0);
     
-    let samples: Array<any> = $state([])
+    let samples: {elapsedMs: number, wpm: number}[] = $state([])
 
     let startTime: number | null = $state(null);
     let lastWordCount = 0;
@@ -45,6 +45,7 @@
         duration = "";
         deletionCount = 0;
         startTime = null;
+        samples = []
     }
 
     function getWindowedWPM() {
@@ -153,7 +154,7 @@
 
     $effect(() => {
         let intervalId: number | null;
-        if (startTime) {
+        if (startTime && !isDialogOpen) { // checking if the dialog is open stops the wpm sampling when it is. It restarts when it's closed
             intervalId = setInterval(getWindowedWPM, (15000))
         }
 
@@ -217,6 +218,10 @@
                     <StatCard
                         data={duration}
                         label="Session duration"
+                    />
+                    <StatCard
+                        data={deletionCount}
+                        label="Times deleted"
                     />
                 </div>
                 <footer>
