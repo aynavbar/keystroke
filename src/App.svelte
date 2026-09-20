@@ -35,9 +35,23 @@
         isDialogOpen = false;
     }
 
-    function startNewSession() {
-        clearDoc();
-        closeDialog();
+    async function setClipboard(text: string) {
+        const type = "text/plain";
+
+        const clipboardItemData =  {
+            [type]: text
+        };
+
+        const clipboardItem = new ClipboardItem(clipboardItemData);
+        await navigator.clipboard.write([clipboardItem]);
+    }
+
+    async function startNewSession() {
+        await setClipboard(docBody)
+            .finally(() => {
+                clearDoc();
+                closeDialog();
+            })
         
         // reset stats
         wordCount = 0;
@@ -212,7 +226,7 @@
                         label="Word count"
                     />
                     <StatCard
-                        data={wpm || 1}
+                        data={wpm}
                         label="Words per minute"
                     />
                     <StatCard
@@ -223,6 +237,11 @@
                         data={deletionCount}
                         label="Times deleted"
                     />
+                </div>
+                <div class="graph-container">
+                    <svg viewBox="0 0 600 200" width="100%" height="100%">
+
+                    </svg>
                 </div>
                 <footer>
                     <button onclick={closeDialog}>Close</button>
@@ -335,6 +354,13 @@
         justify-content: space-between;
         gap: 10px;
         padding-block: 1rem;
+    }
+
+    .dialog .graph-container {
+        display: flex;
+        justify-content: space-between;
+        height: 14rem;
+        padding-block-end: 1rem;
     }
 
     .dialog footer {
